@@ -7,21 +7,16 @@
 
 /*======================================================================*\
  * The original code is using a lot of global variables attached to window
- * 
+ * If we are already using immediate functions we can encapsulate certain things and expose only what is needed
+ * this code needs refactoring so I am going to do it now
+ * attching everything to window is a bad practice and can hurt the product in the longer run
 \*======================================================================*/
 
-(function(){
-    if(window.NS === null || typeof(window.NS) == 'undefined') {
-        window['NS'] = {};
-    }
-    
-    window['NS']['areListsPresent?'] = function(root) {
-        found = this.totalSubarrayLengths([ root.getElementsByTagName('ol'), root.getElementsByTagName('ul') ])
-        return found != 0
-            ? true
-            : false;
-    }
+var NS = (function(){
 
+    var exports = {}; // this is the object that will be exposed by this module
+
+    /* ========== Private Methods and variables come here ============== */
     var totalSubarrayLengths = function(container) {
         total = 0;
 
@@ -30,9 +25,22 @@
         }
         
         return total;
-    }
+    };
 
-    window['NS']['toggleSortableClickHandler'] = function(element) {
+    // Its always a good idea to group all the private methods in one place. This will help other devs debug easily
+
+    /* ================================================================= */
+    
+    exports.areListsPresent? = function(root) {
+        //here found should be defined. If this script is executed it will say found not defined. 
+        var found = this.totalSubarrayLengths([ root.getElementsByTagName('ol'), root.getElementsByTagName('ul') ]);
+        return found != 0
+            ? true
+            : false;
+    };
+
+
+    exports.toggleSortableClickHandler = function(element) {
         element.click = function onClick(e) {
             if (element.getAttribute('class') == 'toggle-sortable') {
                 for (var sortable in document.getElementsByClassName('sortable')) {
@@ -40,11 +48,14 @@
                 }
             }
         }
-    }
+    };
+
+    return exports;
+
 })();
 
 if (NS.areListsPresent?(document)) {
-    $(function() {
+    $(function() { // for this function to work properly I hope the jQuery has been included. 
         for (ol in root.getElementsByTagName('ol')) {
             if (ol.getAttribute('class') == 'sortable') {
                 $(ol).sortable();
